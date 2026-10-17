@@ -1,61 +1,32 @@
 classDiagram
-    class Owner {
-        +str name
-        +str preferences
-        +addTask(task)
-        +updatePreferences(preferences)
+    class Task {
+        +str description
+        +time time
+        +str frequency
+        +bool completed
     }
 
     class Pet {
         +str name
         +str species
         +str breed
+        +list~Task~ tasks
     }
 
-    class CareTask {
-        +str title
-        +str category
-        +int durationMinutes
-        +str priority
-        +str recurrence
-        +str dueTime
-        +bool isComplete
-        +markComplete()
-        +updateDetails()
+    class Owner {
+        +str name
+        +list~Pet~ pets
+        +add_pet(pet)
+        +get_all_tasks() list~Task~
     }
 
-    class PlanningConstraints {
-        +int availableMinutes
-        +str dayStart
-        +str dayEnd
-        +str preferences
+    class Scheduler {
+        +get_all_tasks(owner) list~Task~
+        +organize_tasks(owner) list~Task~
+        +mark_task_complete(task)
     }
 
-    class DailyPlan {
-        +date planDate
-        +int totalAvailableMinutes
-        +int totalScheduledMinutes
-        +str overallRationale
-        +getScheduledItems()
-        +getSkippedTasks()
-    }
-
-    class PlanItem {
-        +str startTime
-        +str endTime
-        +str rationale
-    }
-
-    class Planner {
-        +generatePlan(owner, pet, tasks, constraints) DailyPlan
-        +rankTasks(tasks, owner, constraints)
-        +explainSelection(task, constraints) str
-    }
-
-    Owner "1" --> "0..*" Pet : cares for
-    Owner "1" --> "0..*" CareTask : manages
-    Pet "1" --> "0..*" CareTask : needs
-    Planner ..> PlanningConstraints : evaluates
-    Planner ..> DailyPlan : creates
-    DailyPlan "1" *-- "0..*" PlanItem : contains
-    PlanItem "0..*" --> "1" CareTask : schedules
+    Owner "1" *-- "0..*" Pet : manages
+    Pet "1" *-- "0..*" Task : tracks
+    Scheduler ..> Owner : retrieves tasks through
+    Scheduler ..> Task : organizes and updates

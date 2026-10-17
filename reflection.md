@@ -19,6 +19,13 @@ Owner class - attributes (name, address, pets)
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+Replaced the original seven classes with the requested four: Task, Pet, Owner, and Scheduler.
+Added task details: description, time, frequency, and completion status.
+Added a task list to Pet, and pet management plus get_all_tasks() to Owner.
+Added scheduler methods for retrieving, organizing, and updating tasks.
+Updated relationships to show that an owner manages multiple pets, pets track multiple tasks, and the scheduler retrieves tasks through the owner.
+Removed the separate planning-constraints and daily-plan classes.
+
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
