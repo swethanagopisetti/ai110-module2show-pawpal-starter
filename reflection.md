@@ -6,6 +6,13 @@
 
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
+Three core actions:
+1. Add a new pet to the inventory
+2. Schedule a pet walk
+3. Go through today's tasks
+
+Pet class - attributes (name, type, breed, owner), methods (goForWalk, getGrooming)
+Owner class - attributes (name, address, pets)
 
 **b. Design changes**
 

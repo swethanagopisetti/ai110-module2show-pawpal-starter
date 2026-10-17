@@ -1,15 +1,61 @@
 classDiagram
-    %% Replace the placeholders below with your actual classes, attributes, methods, and relationships.
-    %% Keep this file updated so it matches your final implementation.
-
-    class ClassName {
-        +type attribute
-        +method() returnType
+    class Owner {
+        +str name
+        +str preferences
+        +addTask(task)
+        +updatePreferences(preferences)
     }
 
-    class AnotherClass {
-        +type attribute
-        +method() returnType
+    class Pet {
+        +str name
+        +str species
+        +str breed
     }
 
-    ClassName --> AnotherClass : relationship
+    class CareTask {
+        +str title
+        +str category
+        +int durationMinutes
+        +str priority
+        +str recurrence
+        +str dueTime
+        +bool isComplete
+        +markComplete()
+        +updateDetails()
+    }
+
+    class PlanningConstraints {
+        +int availableMinutes
+        +str dayStart
+        +str dayEnd
+        +str preferences
+    }
+
+    class DailyPlan {
+        +date planDate
+        +int totalAvailableMinutes
+        +int totalScheduledMinutes
+        +str overallRationale
+        +getScheduledItems()
+        +getSkippedTasks()
+    }
+
+    class PlanItem {
+        +str startTime
+        +str endTime
+        +str rationale
+    }
+
+    class Planner {
+        +generatePlan(owner, pet, tasks, constraints) DailyPlan
+        +rankTasks(tasks, owner, constraints)
+        +explainSelection(task, constraints) str
+    }
+
+    Owner "1" --> "0..*" Pet : cares for
+    Owner "1" --> "0..*" CareTask : manages
+    Pet "1" --> "0..*" CareTask : needs
+    Planner ..> PlanningConstraints : evaluates
+    Planner ..> DailyPlan : creates
+    DailyPlan "1" *-- "0..*" PlanItem : contains
+    PlanItem "0..*" --> "1" CareTask : schedules
