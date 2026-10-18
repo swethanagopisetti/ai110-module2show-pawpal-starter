@@ -24,7 +24,7 @@ Your final app should:
 
 ## Implementation Summary
 
-`Task` stores a description, scheduled time, frequency, and completion status. `Pet` keeps its own tasks, while `Owner` manages multiple pets and provides access to all of their tasks. `Scheduler` retrieves tasks through the owner, sorts them by time, and can mark them complete. The example in `main.py` creates two pets and prints their combined daily schedule; tests cover task completion and adding tasks to a pet.
+`Task` stores a description, scheduled time, frequency, and completion status. `Pet` keeps its own tasks, while `Owner` manages multiple pets and provides access to all of their tasks. `Scheduler` retrieves tasks through the owner, sorts them by time, and can mark them complete. The example in `main.py` creates two pets and prints their combined daily schedule.
 
 ## Getting started
 
@@ -68,10 +68,23 @@ pytest
 pytest --cov
 ```
 
+The tests cover task completion and adding tasks, chronological sorting, filtering by completion status and pet name, daily and weekly recurrence (including date rollover), and conflict detection for duplicate times.
+
+Confidence Level – 5 stars
+
 Sample test output:
 
 ```
 # Paste your pytest output here
+% python3 -m pytest
+======================================================== test session starts =========================================================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/swe/codepathai110/ai110-module2show-pawpal-starter
+collected 8 items
+
+tests/test_pawpal.py ........                                                                                                  [100%]
+
+========================================================= 8 passed in 0.02s ==========================================================
 ```
 
 ## 📐 Smarter Scheduling
