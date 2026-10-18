@@ -1,5 +1,6 @@
-from datetime import time
+from datetime import date, time
 
+import pawpal_system
 from pawpal_system import Owner, Pet, Scheduler, Task
 
 
@@ -49,3 +50,71 @@ def test_scheduler_filter_tasks_by_status_and_pet_name() -> None:
 	result = Scheduler().filter_tasks(owner, completed=True, pet_name="MOCHI")
 
 	assert result == [completed_task]
+
+
+def test_scheduler_completion_creates_next_daily_and_weekly_tasks(monkeypatch) -> None:
+	class FixedDate(date):
+		@classmethod
+		def today(cls):
+			return cls(2024, 2, 28)
+
+	monkeypatch.setattr(pawpal_system, "date", FixedDate)
+	expected_dates = {
+		"daily": date(2024, 2, 29),
+		"weekly": date(2024, 3, 6),
+	}
+
+	for frequency in ("daily", "weekly"):
+		pet = Pet("Mochi", "cat")
+		task = Task("Medication", time(8, 0), frequency)
+		pet.add_task(task)
+		owner = Owner("Jordan", [pet])
+
+		next_task = Scheduler().mark_task_complete(owner, task)
+
+		assert task.completed is True
+		assert next_task is not None
+		assert next_task is not task
+		assert next_task.description == task.description
+		assert next_task.time == task.time
+		assert next_task.frequency == frequency
+		assert next_task.due_date == expected_dates[frequency]
+		assert next_task.completed is False
+		assert pet.tasks == [task, next_task]
+
+
+def test_scheduler_completion_does_not_repeat_one_time_or_completed_tasks() -> None:
+	pet = Pet("Mochi", "cat")
+	task = Task("Vet visit", time(8, 0), "once")
+	pet.add_task(task)
+	owner = Owner("Jordan", [pet])
+	scheduler = Scheduler()
+
+	assert scheduler.mark_task_complete(owner, task) is None
+	assert scheduler.mark_task_complete(owner, task) is None
+	assert pet.tasks == [task]
+
+
+def test_scheduler_detect_conflicts_for_same_pet_and_different_pets() -> None:
+	mochi = Pet("Mochi", "cat")
+	biscuit = Pet("Biscuit", "dog")
+	mochi.add_task(Task("Breakfast", time(8, 0), "daily"))
+	mochi.add_task(Task("Medication", time(8, 0), "daily"))
+	biscuit.add_task(Task("Walk", time(8, 0), "daily"))
+	owner = Owner("Jordan", [mochi, biscuit])
+
+	warnings = Scheduler().detect_conflicts(owner)
+
+	assert len(warnings) == 3
+	assert any("for the same pet" in warning for warning in warnings)
+	assert any("for different pets" in warning for warning in warnings)
+	assert all(warning.startswith("Warning:") for warning in warnings)
+
+
+def test_scheduler_detect_conflicts_returns_empty_list_when_clear() -> None:
+	pet = Pet("Mochi", "cat")
+	pet.add_task(Task("Breakfast", time(8, 0), "daily"))
+	pet.add_task(Task("Dinner", time(18, 0), "daily"))
+	owner = Owner("Jordan", [pet])
+
+	assert Scheduler().detect_conflicts(owner) == []

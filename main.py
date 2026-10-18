@@ -15,14 +15,21 @@ def main() -> None:
 		]
 	)
 	biscuit.tasks.append(Task("Morning walk", time(8, 0), "daily"))
+	biscuit.tasks.append(Task("Nap", time(14, 0), "daily"))
+	biscuit.tasks.append(Task("Snack", time(16, 0), "daily"))
+	biscuit.tasks.append(Task("Play", time(16, 0), "daily"))
 
 	owner.add_pet(mochi)
 	owner.add_pet(biscuit)
 
+	scheduler = Scheduler()
 	print("Today's Schedule")
+	print("Owner: ", owner.name)
 	for task in Scheduler().organize_tasks(owner):
 		print(f"{task.time.strftime('%H:%M')} - {task.description}")
 
+	for warning in scheduler.detect_conflicts(owner):
+		print(warning)
 
 if __name__ == "__main__":
 	main()
