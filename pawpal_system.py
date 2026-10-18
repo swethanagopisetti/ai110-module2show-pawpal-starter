@@ -47,9 +47,28 @@ class Scheduler:
 		"""Retrieve all tasks through the owner."""
 		return owner.get_all_tasks()
 
+	def filter_tasks(
+		self,
+		owner: Owner,
+		completed: bool | None = None,
+		pet_name: str | None = None,
+	) -> list[Task]:
+		"""Filter tasks by completion status, pet name, or both."""
+		return [
+			task
+			for pet in owner.pets
+			if pet_name is None or pet.name.casefold() == pet_name.casefold()
+			for task in pet.tasks
+			if completed is None or task.completed is completed
+		]
+
+	def sort_by_time(self, tasks: list[Task]) -> list[Task]:
+		"""Return tasks ordered by their scheduled time."""
+		return sorted(tasks, key=lambda task: task.time.strftime("%H:%M"))
+
 	def organize_tasks(self, owner: Owner) -> list[Task]:
 		"""Return all pet tasks ordered by scheduled time."""
-		return sorted(self.get_all_tasks(owner), key=lambda task: task.time)
+		return self.sort_by_time(self.get_all_tasks(owner))
 
 	def mark_task_complete(self, task: Task) -> None:
 		"""Mark the given task as completed."""
