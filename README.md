@@ -22,6 +22,10 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Implementation Summary
+
+`Task` stores a description, scheduled time, frequency, and completion status. `Pet` keeps its own tasks, while `Owner` manages multiple pets and provides access to all of their tasks. `Scheduler` retrieves tasks through the owner, sorts them by time, and can mark them complete. The example in `main.py` creates two pets and prints their combined daily schedule; tests cover task completion and adding tasks to a pet.
+
 ## Getting started
 
 ### Setup
