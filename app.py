@@ -76,13 +76,40 @@ if submitted:
         )
     )
 
-schedule = pawpal_system.Scheduler().organize_tasks(owner)
+scheduler = pawpal_system.Scheduler()
+conflict_warnings = scheduler.detect_conflicts(owner)
+if conflict_warnings:
+    st.subheader("Scheduling conflicts")
+    for warning in conflict_warnings:
+        st.warning(
+            f"{warning} Please move one of these tasks to another time.",
+            icon="⚠️",
+        )
+else:
+    st.success("No scheduling conflicts detected.")
+
+st.subheader("Current schedule")
+pet_options = ["All pets", *(owner_pet.name for owner_pet in owner.pets)]
+selected_pet = st.selectbox("Pet", pet_options)
+status_options = {"All tasks": None, "To do": False, "Completed": True}
+selected_status = st.selectbox("Status", list(status_options))
+
+filtered_tasks = scheduler.filter_tasks(
+    owner,
+    completed=status_options[selected_status],
+    pet_name=None if selected_pet == "All pets" else selected_pet,
+)
+schedule = scheduler.sort_by_time(filtered_tasks)
+
 if schedule:
-    st.write("Current schedule:")
     st.table(
         [
             {
-                "Pet": pet.name,
+                "Pet": next(
+                    owner_pet.name
+                    for owner_pet in owner.pets
+                    if any(pet_task is task for pet_task in owner_pet.tasks)
+                ),
                 "Time": task.time.strftime("%H:%M"),
                 "Task": task.description,
                 "Frequency": task.frequency,
@@ -91,5 +118,9 @@ if schedule:
             for task in schedule
         ]
     )
+    st.caption(f"Showing {len(schedule)} task(s), sorted by scheduled time.")
 else:
-    st.info("No tasks scheduled yet.")
+    if scheduler.get_all_tasks(owner):
+        st.info("No tasks match these filters.")
+    else:
+        st.info("No tasks scheduled yet.")

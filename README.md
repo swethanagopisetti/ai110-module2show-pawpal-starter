@@ -87,23 +87,52 @@ tests/test_pawpal.py ........                                                   
 ========================================================= 8 passed in 0.02s ==========================================================
 ```
 
-## 📐 Smarter Scheduling
+## Features
+
+- **Sorting by time:** Schedules tasks in chronological order by clock time without changing the original list.
+- **Task filtering:** Filters by completion status, pet name, or both. Pet-name matching is case-insensitive.
+- **Conflict warnings:** Groups tasks by due date and time and warns when multiple tasks share a time slot. Warnings identify the task and pet names, and whether the conflict is for one pet or multiple pets. Repeated references to the same task are counted once.
+- **Daily recurrence:** Completing a daily task creates a new, incomplete occurrence due the next day.
+- **Weekly recurrence:** Completing a weekly task creates a new, incomplete occurrence due seven days later.
+- **One-time tasks:** Completing a one-time task marks it complete without creating another occurrence. Already-completed tasks are not repeated.
+- **Streamlit schedule view:** Shows tasks in time order with pet and completion-status filters, and displays actionable conflict warnings.
+
+## Smarter Scheduling
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | `Scheduler.sort_by_time()`, `Scheduler.organize_tasks()` | Sorts tasks by scheduled clock time without modifying the input list. `organize_tasks()` gathers all owner tasks before sorting. |
+| Task sorting | `Scheduler.sort_by_time()`, `Scheduler.organize_tasks()` | Sorts by scheduled clock time without modifying the input list. `organize_tasks()` gathers all owner tasks before sorting. |
 | Filtering | `Scheduler.filter_tasks()` | Optionally filters by completion status, pet name, or both. Pet-name matching is case-insensitive. |
 | Conflict detection | `Scheduler.detect_conflicts()` | Groups tasks by due date and time, then returns a warning for each slot with multiple tasks. Warnings identify same-pet and cross-pet conflicts. |
-| Recurring tasks | `Scheduler.mark_task_complete()` | Marks a task complete and appends a new incomplete task for daily or weekly recurrence. The next due date is one or seven days from today; one-time tasks do not recur. |
+| Recurring tasks | `Scheduler.mark_task_complete()` | Marks a task complete and appends a new incomplete task for daily or weekly recurrence, due one or seven days later. One-time and already-completed tasks do not recur. |
 
-## 📸 Demo Walkthrough
+## Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+### Streamlit App
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+The app lets an owner enter their name and the initial pet's name and species, then schedule a task by entering its description, time, and frequency (daily, weekly, or once). The schedule appears in a table with each task's pet, time, frequency, and completion status. Pet and status selectors filter the table. Conflict warnings appear above the schedule when tasks share a due date and time; otherwise, the app confirms that no conflicts were detected.
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+### Example Workflow
+
+1. Enter the owner's name and the pet's name and species. This creates the initial pet in the app.
+2. Enter a task such as "Morning walk," choose its time and frequency, and submit the form.
+3. View the task in the schedule table, ordered by time. Use the pet and status selectors to filter the displayed tasks.
+4. If two tasks overlap, review the warning for the task names, pets, date, and time, then move one task to another time.
+
+The Streamlit form creates one initial pet; adding additional pets is demonstrated in the CLI example below. The Scheduler sorts tasks by scheduled clock time, filters by pet and completion status, and detects conflicts by due-date/time slot. Completing a daily or weekly task through the Scheduler creates its next occurrence for the following day or seven days later.
+
+### CLI Output
+
+Run `python3 main.py` to print a sample schedule and conflict warning:
+
+```text
+Today's Schedule
+Owner:  Jordan
+07:30 - Breakfast
+08:00 - Morning walk
+14:00 - Nap
+16:00 - Snack
+16:00 - Play
+18:00 - Evening feeding
+Warning: Snack (Biscuit), Play (Biscuit) are scheduled for 16:00 on 2026-10-18 for the same pet.
+```
