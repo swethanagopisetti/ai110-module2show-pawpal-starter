@@ -40,6 +40,13 @@ Removed the separate planning-constraints and daily-plan classes.
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+The clearest improvement is in sort_by_time(): since Task.time is already a datetime.time, compare it directly instead of converting it to a string.
+
+
+For detect_conflicts() in pawpal_system.py, the pairwise scan is easy to follow but takes O(n2) comparisons even when there are no conflicts. If schedules grow, group tasks by (due_date, time) first, then report only groups with multiple tasks. That’s O(n) to group and scan, as long as you produce one warning per conflicting time slot. If you want a separate warning for every conflicting pair, generating those warnings can still take O(n2).
+
+filter_tasks() could also use explicit for loops and continue checks instead of a multi-clause list comprehension. That’s a readability choice, not a meaningful performance improvement for this app’s likely task counts.
+
 ---
 
 ## 3. AI Collaboration

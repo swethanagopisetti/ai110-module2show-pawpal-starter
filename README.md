@@ -76,14 +76,12 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()`, `Scheduler.organize_tasks()` | Sorts tasks by scheduled clock time without modifying the input list. `organize_tasks()` gathers all owner tasks before sorting. |
+| Filtering | `Scheduler.filter_tasks()` | Optionally filters by completion status, pet name, or both. Pet-name matching is case-insensitive. |
+| Conflict detection | `Scheduler.detect_conflicts()` | Groups tasks by due date and time, then returns a warning for each slot with multiple tasks. Warnings identify same-pet and cross-pet conflicts. |
+| Recurring tasks | `Scheduler.mark_task_complete()` | Marks a task complete and appends a new incomplete task for daily or weekly recurrence. The next due date is one or seven days from today; one-time tasks do not recur. |
 
 ## 📸 Demo Walkthrough
 

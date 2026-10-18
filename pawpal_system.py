@@ -54,50 +54,89 @@ class Scheduler:
 		completed: bool | None = None,
 		pet_name: str | None = None,
 	) -> list[Task]:
-		"""Filter tasks by completion status, pet name, or both."""
-		return [
-			task
-			for pet in owner.pets
-			if pet_name is None or pet.name.casefold() == pet_name.casefold()
-			for task in pet.tasks
-			if completed is None or task.completed is completed
-		]
+		"""Return tasks matching the optional completion and pet-name filters.
+
+		Pet names are matched case-insensitively. If both filters are provided,
+		a task must match both conditions.
+		"""
+		filtered_tasks = []
+		target_pet_name = pet_name.casefold() if pet_name is not None else None
+
+		for pet in owner.pets:
+			if target_pet_name is not None and pet.name.casefold() != target_pet_name:
+				continue
+			for task in pet.tasks:
+				if completed is not None and task.completed is not completed:
+					continue
+				filtered_tasks.append(task)
+
+		return filtered_tasks
 
 	def sort_by_time(self, tasks: list[Task]) -> list[Task]:
-		"""Return tasks ordered by their scheduled time."""
-		return sorted(tasks, key=lambda task: task.time.strftime("%H:%M"))
+		"""Return a new list ordered by scheduled clock time.
+
+		The input list is not modified; tasks with equal times retain their order.
+		"""
+		return sorted(tasks, key=lambda task: task.time)
 
 	def organize_tasks(self, owner: Owner) -> list[Task]:
 		"""Return all pet tasks ordered by scheduled time."""
 		return self.sort_by_time(self.get_all_tasks(owner))
 
 	def detect_conflicts(self, owner: Owner) -> list[str]:
-		"""Return warnings for tasks sharing a due date and scheduled time."""
-		scheduled_tasks = [
-			(pet, task)
-			for pet in owner.pets
-			for task in pet.tasks
-		]
+		"""Return one warning per due-date/time slot containing multiple tasks.
+
+		Tasks are grouped by due date and clock time. Repeated references to the
+		same task object are counted only once.
+		"""
+		conflicts: dict[tuple[date, time_type], list[tuple[Pet, Task]]] = {}
+		seen_tasks: set[int] = set()
+
+		for pet in owner.pets:
+			for task in pet.tasks:
+				task_id = id(task)
+				if task_id in seen_tasks:
+					continue
+				seen_tasks.add(task_id)
+				key = (task.due_date, task.time)
+				conflicts.setdefault(key, []).append((pet, task))
+
 		warnings = []
+		for (due_date, task_time), entries in conflicts.items():
+			if len(entries) < 2:
+				continue
 
-		for index, (pet, task) in enumerate(scheduled_tasks):
-			for other_pet, other_task in scheduled_tasks[index + 1:]:
-				if task is other_task:
-					continue
-				if task.due_date != other_task.due_date or task.time != other_task.time:
-					continue
+			task_names = ", ".join(
+				f"{task.description} ({pet.name})" for pet, task in entries
+			)
+			pet_task_counts: dict[int, int] = {}
+			for pet, _ in entries:
+				pet_id = id(pet)
+				pet_task_counts[pet_id] = pet_task_counts.get(pet_id, 0) + 1
 
-				pet_scope = "the same pet" if pet is other_pet else "different pets"
-				warnings.append(
-					f"Warning: {task.description} ({pet.name}) and "
-					f"{other_task.description} ({other_pet.name}) are scheduled for "
-					f"{task.time.strftime('%H:%M')} on {task.due_date} for {pet_scope}."
-				)
+			has_same_pet_conflict = any(count > 1 for count in pet_task_counts.values())
+			has_different_pet_conflict = len(pet_task_counts) > 1
+			conflict_types = []
+			if has_same_pet_conflict:
+				conflict_types.append("for the same pet")
+			if has_different_pet_conflict:
+				conflict_types.append("for different pets")
+
+			warnings.append(
+				f"Warning: {task_names} are scheduled for "
+				f"{task_time.strftime('%H:%M')} on {due_date} "
+				f"{' and '.join(conflict_types)}."
+			)
 
 		return warnings
 
 	def mark_task_complete(self, owner: Owner, task: Task) -> Task | None:
-		"""Complete a task and schedule its next recurring occurrence."""
+		"""Complete a task and append its next daily or weekly occurrence.
+
+		Returns the new task, or ``None`` for a one-time or already-completed task.
+		Raises ``ValueError`` if the task does not belong to one of the owner's pets.
+		The next due date is calculated from today.
+		"""
 		pet = next(
 			(
 				pet

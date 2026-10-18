@@ -105,9 +105,12 @@ def test_scheduler_detect_conflicts_for_same_pet_and_different_pets() -> None:
 
 	warnings = Scheduler().detect_conflicts(owner)
 
-	assert len(warnings) == 3
+	assert len(warnings) == 1
 	assert any("for the same pet" in warning for warning in warnings)
 	assert any("for different pets" in warning for warning in warnings)
+	assert "Breakfast (Mochi)" in warnings[0]
+	assert "Medication (Mochi)" in warnings[0]
+	assert "Walk (Biscuit)" in warnings[0]
 	assert all(warning.startswith("Warning:") for warning in warnings)
 
 
